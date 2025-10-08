@@ -17,7 +17,7 @@ This repository is based on the idea (and a bit of code) from [projectGames](htt
 - Resilient request helper: retries with backoff on transient errors (403 / 429 / network).
 - Two-stage extraction: list pages → detail pages (HTML + JSON-LD parsing).
 - Per-page incremental CSV snapshots saved under `pages/` for resilience & resumability.
-- Final raw & cleaned consolidated datasets: [metacritic_dataset_raw.csv], [metacritic_dataset_clean.csv].
+- Final raw & cleaned consolidated datasets: [metacritic_dataset_raw.csv](https://github.com/StadynR/metacritic-reviews-dataset/blob/main/metacritic_dataset_raw.csv), [metacritic_dataset_clean.csv](https://github.com/StadynR/metacritic-reviews-dataset/blob/main/metacritic_dataset_clean.csv).
 - Data cleaning pipeline embedded in the scraper notebook.
 
 ## Repository Structure
