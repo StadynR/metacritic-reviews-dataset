@@ -1,11 +1,6 @@
 import streamlit as st
 from styles import inject_custom_css, create_animated_metric, create_feature_explanation
 from utils import validate_inputs, load_model, load_enhanced_dataset, predict_game_score, get_popular_options, get_valid_example_values
-import joblib
-import numpy as np
-import pandas as pd
-from datetime import datetime
-import os
 
 # Try to import plotly, but don't fail if not available
 try:
@@ -32,7 +27,7 @@ def create_score_gauge(score):
         mode = "gauge+number+delta",
         value = score,
         domain = {'x': [0, 1], 'y': [0, 1]},
-        title = {'text': "Predicted User Score", 'font': {'size': 24, 'color': 'white'}},
+        title = {'text': "Predicted User Score", 'font': {'size': 26, 'color': 'white'}},
         delta = {'reference': 7.0, 'increasing': {'color': "green"}, 'decreasing': {'color': "red"}},
         gauge = {
             'axis': {'range': [None, 10], 'tickwidth': 1, 'tickcolor': "darkblue"},
@@ -53,7 +48,7 @@ def create_score_gauge(score):
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
         font={'color': "white", 'family': "Arial"},
-        height=400
+        height=500
     )
     
     return fig
