@@ -7,7 +7,6 @@ Asynchronous Python scraper (Jupyter notebook) to build a structured dataset of 
 </div>
 
 > Data collection performed on: **October 7, 2025**  
-> The visualization notebook is currently a **work in progress** (WIP) and will likely not run as-is.
 
 This repository is based on the idea (and a bit of code) from [projectGames](https://github.com/BrunoBVR/projectGames) (2020), but it has been rewritten to account for the current structure of the Metacritic website and to extract the specific data I wanted.
 
@@ -19,13 +18,16 @@ This repository is based on the idea (and a bit of code) from [projectGames](htt
 - Per-page incremental CSV snapshots saved under `pages/` for resilience & resumability.
 - Final raw & cleaned consolidated datasets: [metacritic_dataset_raw.csv](https://github.com/StadynR/metacritic-reviews-dataset/blob/main/metacritic_dataset_raw.csv), [metacritic_dataset_clean.csv](https://github.com/StadynR/metacritic-reviews-dataset/blob/main/metacritic_dataset_clean.csv).
 - Data cleaning pipeline embedded in the scraper notebook.
+- Comprehensive data visualizations including temporal analysis, genre distributions, and manufacturer comparisons.
+- Machine learning model for predicting user scores based on game features (genre, platform, manufacturer, developer reputation, temporal factors).
 
 ## Repository Structure
 
 ```
 pages/                          # Incremental per-page CSV outputs (games_data-page<N>.csv)
 metacritic_scraper.ipynb        # Main scraping + cleaning notebook (end‑to‑end workflow)
-metacritic_visualizations.ipynb # (WIP) early exploratory plots
+metacritic_visualizations.ipynb # Data visualization and exploratory analysis
+metacritic_model.ipynb          # Machine learning model for score prediction
 metacritic_dataset_raw.csv      # Full raw concatenated dataset (may contain null / 'tbd')
 metacritic_dataset_clean.csv    # Cleaned dataset (no nulls, scores numeric, 'tbd' removed)
 requirements.txt                # Core Python dependencies
@@ -71,7 +73,9 @@ If you encounter nested event loop issues inside Jupyter, install:
 pip install nest_asyncio
 ```
 
-## Usage (Scraping Workflow)
+## Usage
+
+### Data Collection (Scraping Workflow)
 
 1. Open `metacritic_scraper.ipynb` in Jupyter / VS Code.  
 2. (Optional) Adjust parameters near the top:  
@@ -86,11 +90,31 @@ pip install nest_asyncio
 4. After completion, run the concatenation cell to build the unified DataFrame and save `metacritic_dataset_raw.csv`.  
 5. Run the cleaning section to output `metacritic_dataset_clean.csv`.  
 
-### Resuming / Partial Runs
+#### Resuming / Partial Runs
 Currently the notebook does not skip already-downloaded page CSVs automatically—re-running will overwrite existing per-page files. To resume, manually adjust the page range to start after the last completed page.
 
-## Visualizations (WIP)
-`metacritic_visualizations.ipynb` currently contains early exploratory line plots (yearly average metascore / user score). It will evolve.
+### Data Visualization
+
+Open `metacritic_visualizations.ipynb` to explore the dataset through various visualizations:
+- **Temporal Analysis**: Metascore vs User Score evolution over years
+- **Genre Distribution**: Pie charts and frequency analysis of game genres
+- **Metagenre Classification**: Grouped genre analysis for broader categorization
+- **Platform/Manufacturer Analysis**: Score trends across different gaming platforms and manufacturers
+
+### Machine Learning Model
+
+Open `metacritic_model.ipynb` to:
+- Train a Random Forest model to predict user scores
+- Explore feature engineering including developer reputation, seasonal effects, platform-genre interactions
+- Evaluate model performance with cross-validation
+- Make predictions for new games based on their characteristics
+
+The model uses features such as:
+- Metascore (scaled to 0-10)
+- Developer reputation (historical average scores)
+- Release timing (month, holiday releases)
+- Platform characteristics (age, manufacturer)
+- Genre popularity and platform-genre interactions
 
 ## Contributing
 I created this repository for a class project in my master's program, but after much consideration I decided to make it public because most video game databases stop at 2020 and the scrapers used to obtain that information are outdated. I probably will not maintain or update this repository for long after the project ends, so if you want to help keep it updated, please do.
@@ -113,4 +137,10 @@ A: Different platform releases (and sometimes re-releases) have independent crit
 
 **Q: How do I add new fields (e.g., ESRB rating)?**  
 A: Extend `get_game_details` with new selectors and update the DataFrame assembly accordingly.
+
+**Q: What's the accuracy of the machine learning model?**  
+A: The enhanced Random Forest model achieves an R² score of ~0.3-0.4, indicating moderate predictive power. The model works best for games with established developer histories and common genre-platform combinations.
+
+**Q: Can I use the model to predict scores for unreleased games?**  
+A: Yes, but ensure the game's developer, platform, and genre exist in the training data. The model may have reduced accuracy for completely new developers or unusual genre-platform combinations.
 
