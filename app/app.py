@@ -40,7 +40,7 @@ def main():
     st.write("Enter the values for the features to get a prediction.")
 
     # Load the enhanced dataset for feature scaling
-    df_enhanced = pd.read_csv('app\\metacritic_dataset_features_enhanced.csv')
+    df_enhanced = pd.read_csv('app\metacritic_dataset_features_enhanced.csv')
 
     # Define input fields for user to enter feature values with proper labels
     features = {}
@@ -54,7 +54,7 @@ def main():
     # Button to make a prediction
     if st.button('Predict'):
         try:
-            model = joblib.load('model.pkl')
+            model = joblib.load('app\metacritic_model.pkl')
             prediction = predict_game_score(features, model, df_enhanced)
 
             # Display the result
@@ -72,8 +72,8 @@ def test():
         'genre': "Action",
         'manufacturer': "Nintendo",
     }
-    model = joblib.load('app\\metacritic_model.pkl')
-    df_enhanced = pd.read_csv('app\\metacritic_dataset_features_enhanced.csv')
+    model = joblib.load('app\metacritic_model.pkl')
+    df_enhanced = pd.read_csv('app\metacritic_dataset_features_enhanced.csv')
     prediction = predict_game_score(sample_game, model, df_enhanced)
     print(f"Test Prediction: {prediction:.2f}")
 
