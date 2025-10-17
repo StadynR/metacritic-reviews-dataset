@@ -12,26 +12,32 @@ This repository is based on the idea (and a bit of code) from [projectGames](htt
 
 ## Features
 
-- Fully asynchronous scraping with `httpx` + `asyncio` + bounded concurrency.
-- Resilient request helper: retries with backoff on transient errors (403 / 429 / network).
-- Two-stage extraction: list pages → detail pages (HTML + JSON-LD parsing).
-- Per-page incremental CSV snapshots saved under `pages/` for resilience & resumability.
-- Final raw & cleaned consolidated datasets: [metacritic_dataset_raw.csv](https://github.com/StadynR/metacritic-reviews-dataset/blob/main/metacritic_dataset_raw.csv), [metacritic_dataset_clean.csv](https://github.com/StadynR/metacritic-reviews-dataset/blob/main/metacritic_dataset_clean.csv).
-- Data cleaning pipeline embedded in the scraper notebook.
-- Comprehensive data visualizations including temporal analysis, genre distributions, and manufacturer comparisons.
-- Machine learning model for predicting user scores based on game features (genre, platform, manufacturer, developer reputation, temporal factors).
+- **🚀 Production-Ready Web App**: Modern Streamlit application with professional UI/UX design
+- **🔄 Fully Asynchronous Scraping**: Built with `httpx` + `asyncio` + bounded concurrency for optimal performance
+- **🛡️ Resilient Data Collection**: Retries with exponential backoff on transient errors (403/429/network issues)
+- **📊 Advanced Machine Learning**: Random Forest model with feature engineering for accurate user score predictions
+- **🎨 Interactive Visualizations**: Comprehensive charts using Plotly with elegant gauge displays and metrics
+- **📈 Temporal & Trend Analysis**: Multi-dimensional data exploration across genres, platforms, and time periods
+- **🔧 Robust Error Handling**: Graceful degradation and fallback mechanisms throughout the application
+- **💾 Incremental Processing**: Per-page CSV snapshots for resilience and resumability during scraping
+- **🎯 Smart Predictions**: Context-aware predictions with developer reputation, seasonal effects, and platform interactions
+- **📱 Responsive Design**: Mobile-friendly interface with modern CSS styling and animations
 
 ## Repository Structure
 
 ```
 pages/                          # Incremental per-page CSV outputs (games_data-page<N>.csv)
+app/                           # Streamlit web application
+├── app.py                     # Main application file
+├── styles.py                  # Custom CSS styles and components
+└── metacritic_dataset_features_enhanced.csv  # Enhanced dataset with engineered features
 metacritic_scraper.ipynb        # Main scraping + cleaning notebook (end‑to‑end workflow)
 metacritic_visualizations.ipynb # Data visualization and exploratory analysis
 metacritic_model.ipynb          # Machine learning model for score prediction
 metacritic_dataset_raw.csv      # Full raw concatenated dataset (may contain null / 'tbd')
 metacritic_dataset_clean.csv    # Cleaned dataset (no nulls, scores numeric, 'tbd' removed)
-requirements.txt                # Core Python dependencies
-README.md                       # This document
+requirements.txt                # Core Python dependencies (updated with Streamlit and Plotly)
+README.md                      # This document
 ```
 
 ## Structure of the Datasets (Columns)
@@ -49,28 +55,54 @@ README.md                       # This document
 
 ## Installation & Environment
 
-Tested with **Python 3.11** (3.10+ should work) in a virtual environment.
+Tested with **Python 3.10** (3.10+ should work) in a virtual environment.
 
 ### Windows (PowerShell)
 ```powershell
+# Clone the repository
+git clone https://github.com/StadynR/metacritic-reviews-dataset.git
+cd metacritic-reviews-dataset
+
+# Create and activate virtual environment
 python -m venv env
 ./env/Scripts/Activate.ps1
+
+# Install dependencies
 pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### (Optional) Jupyter Kernel Registration
-If you want the virtual environment to appear as a Jupyter kernel:
-```powershell
+### Linux/macOS
+```bash
+# Clone the repository
+git clone https://github.com/StadynR/metacritic-reviews-dataset.git
+cd metacritic-reviews-dataset
+
+# Create and activate virtual environment
+python -m venv env
+source env/bin/activate
+
+# Install dependencies
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+### (Optional) Jupyter Environment Setup
+For data analysis and model development:
+```bash
 pip install ipykernel
-python -m ipykernel install --user --name metacritic-env --display-name "Metacritic Env"
+python -m ipykernel install --user --name metacritic-env --display-name "Metacritic Analysis"
 ```
 
-Implicit / standard library: `asyncio`, `json`, `re`, `ast`, `pathlib`, `time`, `random`.
-
-If you encounter nested event loop issues inside Jupyter, install:
-```
+### Troubleshooting
+If you encounter event loop issues in Jupyter:
+```bash
 pip install nest_asyncio
+```
+
+For Windows users experiencing execution policy issues:
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
 ## Usage
@@ -116,6 +148,47 @@ The model uses features such as:
 - Platform characteristics (age, manufacturer)
 - Genre popularity and platform-genre interactions
 
+### Web Application
+
+Launch the interactive Streamlit web application:
+
+```bash
+cd app
+streamlit run app.py
+```
+
+The application features a modern interface with:
+
+#### Professional UI/UX Design
+- **Elegant Color Scheme**: Professional grey gradient backgrounds for optimal readability
+- **Custom CSS Styling**: Modern cards, shadows, and animations throughout the interface
+- **Mobile-Responsive**: Adapts seamlessly to different screen sizes and devices
+
+#### Advanced Prediction Interface
+- **Interactive Score Gauge**: Large, color-coded circular gauge with smooth animations
+- **Smart Input Forms**: Dropdowns populated with popular options from the actual dataset
+- **Example Game Buttons**: Quick-start presets for Nintendo, PlayStation, and PC games
+- **Real-time Validation**: Comprehensive input validation with helpful error messages
+
+#### Advanced Visualizations
+- **Score Gauge Chart**: Beautiful circular gauge showing prediction with color-coded ranges
+- **Animated Metrics**: Eye-catching metric cards with performance indicators
+- **Dataset Insights**: Live statistics from the current dataset
+
+#### Error Handling & Robustness
+- **Graceful Degradation**: App works even if optional libraries (like Plotly) aren't installed
+- **Input Validation**: Comprehensive validation for all user inputs
+- **Fallback Values**: Smart defaults when data is missing from the dataset
+- **Error Recovery**: Detailed error messages and recovery suggestions
+
+#### User Experience
+- **Contextual Help**: Tooltips and explanations for each input field
+- **Example Games**: Quick-start buttons with popular game configurations
+- **Score Interpretation**: Clear categorization of prediction results (Exceptional, Good, Mixed, Poor)
+- **Feature Explanations**: Detailed sidebar explaining how each factor affects predictions
+
+If you want to check the app in action, go to https://metacritic-user-review-prediction.streamlit.app
+
 ## Contributing
 I created this repository for a class project in my master's program, but after much consideration I decided to make it public because most video game databases stop at 2020 and the scrapers used to obtain that information are outdated. I probably will not maintain or update this repository for long after the project ends, so if you want to help keep it updated, please do.
 
@@ -143,4 +216,10 @@ A: The enhanced Random Forest model achieves an R² score of ~0.3-0.4, indicatin
 
 **Q: Can I use the model to predict scores for unreleased games?**  
 A: Yes, but ensure the game's developer, platform, and genre exist in the training data. The model may have reduced accuracy for completely new developers or unusual genre-platform combinations.
+
+**Q: How do I update the app with new data?**  
+A: Replace the CSV files in the `app/` directory with updated datasets, then restart the Streamlit application. The caching system will automatically load the new data.
+
+**Q: Can I customize the app's appearance?**  
+A: Yes! Edit the `app/styles.py` file to modify colors, layouts, and styling. The CSS is modular and well-documented for easy customization.
 
