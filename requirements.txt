@@ -6,3 +6,5 @@ matplotlib
 nest-asyncio
 seaborn
 scikit-learn
+joblib
+streamlit
