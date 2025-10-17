@@ -2,3 +2,7 @@ httpx
 beautifulsoup4
 lxml
 pandas
+matplotlib
+nest-asyncio
+seaborn
+scikit-learn
