@@ -163,7 +163,7 @@ def main():
             if raw_example_features:
                 example_features = get_valid_example_values(raw_example_features, developers, platforms, genres)
             else:
-                example_features = {}
+                example_features = {'metascore': 0, 'month': 1, 'developer': '', 'platform': '', 'genre': '' }
             
             # Create horizontal layout with more columns to use full width
             col1, col2, col3, col4, col5 = st.columns([1.2, 1, 1, 1, 1])
@@ -241,9 +241,9 @@ def main():
                 type="primary"
             )
                 
-            # # Clear example features after form submission
-            # if submitted and 'example_features' in st.session_state:
-            #     del st.session_state.example_features
+            # Clear example features after form submission
+            if submitted and 'example_features' in st.session_state:
+                del st.session_state.example_features
 
             if submitted:
                 # Collect features
