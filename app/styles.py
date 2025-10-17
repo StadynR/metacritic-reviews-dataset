@@ -10,7 +10,7 @@ def inject_custom_css():
     <style>
     /* Global styles */
     .stApp {
-        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        background: linear-gradient(180deg, #1E2532 0%, #141820 100%);
     }
     
     /* Main content area */

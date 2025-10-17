@@ -236,8 +236,8 @@ def main():
                     index=genre_index if genres else None,
                     help="Select the game genre/category"
                 )
-
-                # Submit button with custom styling
+                
+                # Submit button with custom styling - positioned at same height as Platform
                 submitted = st.form_submit_button(
                     "🔮 Predict Score", 
                     use_container_width=True,
