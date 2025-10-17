@@ -38,7 +38,7 @@ def load_model():
 def load_enhanced_dataset():
     """Load the enhanced dataset with precomputed features"""
     try:
-        df = pd.read_csv('app/enhanced_metacritic_dataset.csv')
+        df = pd.read_csv('app/metacritic_dataset_features_enhanced.csv')
         return df
     except Exception as e:
         st.error(f"Error loading dataset: {str(e)}")
