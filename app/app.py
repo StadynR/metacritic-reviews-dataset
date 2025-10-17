@@ -118,8 +118,8 @@ def main():
     df_enhanced = load_enhanced_dataset()
     model = load_model()
     
-    if df_enhanced is None or model is None:
-        st.stop()
+    # Check if data/model loading failed
+    data_loaded = df_enhanced is not None and model is not None
 
     # Sidebar for additional info
     with st.sidebar:
@@ -133,22 +133,38 @@ def main():
         - **🎭 Genre**: Game category
         """)
         
-        # Show dataset insights
-        show_data_insights(df_enhanced)
+        # Show dataset insights only if data is loaded
+        if data_loaded:
+            show_data_insights(df_enhanced)
+        else:
+            st.warning("⚠️ Dataset not loaded. Using default options.")
         
         st.markdown("---")
         
         # Add feature explanation if custom styles are available
-        create_feature_explanation()
+        try:
+            create_feature_explanation()
+        except:
+            pass
 
         st.markdown("🔗 **Data Source**: Metacritic Reviews Dataset")
         st.markdown("🤖 **Model**: Random Forest Regressor")
 
-    # Get options for dropdowns
-    developers, platforms, genres= get_popular_options(df_enhanced)
+    # Get options for dropdowns - with fallbacks
+    if data_loaded:
+        developers, platforms, genres = get_popular_options(df_enhanced)
+    else:
+        # Provide default options when data isn't loaded
+        developers = ["Nintendo", "Sony", "Microsoft", "EA", "Ubisoft", "Activision", "Square Enix", "Capcom"]
+        platforms = ["PC", "PlayStation 5", "Xbox Series X", "Nintendo Switch", "PlayStation 4", "Xbox One"]
+        genres = ["Action", "Adventure", "RPG", "Strategy", "Sports", "Racing", "Simulation", "Puzzle"]
 
     # Use full width layout
     st.subheader("🎯 Game Information")
+    
+    # Show data loading status
+    if not data_loaded:
+        st.warning("⚠️ **Limited Mode**: Using default options. Some features may not work correctly until data is loaded.")
     
     # Show message if example was loaded
     if st.session_state.get('example_features'):
@@ -254,6 +270,12 @@ def main():
                     'platform': platform or "",
                     'genre': genre or "",
                 }
+                
+                # Check if data and model are available
+                if not data_loaded:
+                    st.error("❌ **Cannot make predictions**: Dataset and/or model failed to load. Please check the app files and try refreshing the page.")
+                    st.info("💡 **Tip**: Ensure 'metacritic_dataset_features_enhanced.csv' and 'metacritic_model.pkl' are in the app folder.")
+                    return
                 
                 # Validate inputs
                 errors = validate_inputs(features)
