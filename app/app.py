@@ -40,7 +40,7 @@ def main():
     st.write("Enter the values for the features to get a prediction.")
 
     # Load the enhanced dataset for feature scaling
-    df_enhanced = pd.read_csv('metacritic_dataset_features_enhanced.csv')
+    df_enhanced = pd.read_csv('app\\metacritic_dataset_features_enhanced.csv')
 
     # Define input fields for user to enter feature values with proper labels
     features = {}
