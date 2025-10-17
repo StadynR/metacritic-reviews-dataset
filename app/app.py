@@ -1,17 +1,23 @@
 import streamlit as st
 from styles import inject_custom_css, create_animated_metric, create_feature_explanation
-from utils import validate_inputs, load_model, load_enhanced_dataset, predict_game_score
+from utils import validate_inputs, load_model, load_enhanced_dataset, predict_game_score, get_popular_options, get_valid_example_values
 import joblib
 import numpy as np
 import pandas as pd
 from datetime import datetime
-import plotly.graph_objects as go
-import plotly.express as px
 import os
+
+# Try to import plotly, but don't fail if not available
+try:
+    import plotly.graph_objects as go
+    import plotly.express as px
+    PLOTLY_AVAILABLE = True
+except ImportError:
+    PLOTLY_AVAILABLE = False
 
 # Configure page settings
 st.set_page_config(
-    page_title="🎮 Metacritic Game Score Predictor",
+    page_title="Metacritic Game Score Predictor",
     page_icon="🎮",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -19,8 +25,10 @@ st.set_page_config(
 
 def create_score_gauge(score):
     """Create a beautiful gauge chart for the prediction score"""
+    if not PLOTLY_AVAILABLE:
+        return None
         
-    fig = go.Figure(go.Indicator(
+    fig = go.Figure(go.Indicator( # type: ignore
         mode = "gauge+number+delta",
         value = score,
         domain = {'x': [0, 1], 'y': [0, 1]},
@@ -37,12 +45,7 @@ def create_score_gauge(score):
                 {'range': [5, 7], 'color': '#ffaa44'},
                 {'range': [7, 8.5], 'color': '#44aa44'},
                 {'range': [8.5, 10], 'color': '#44ff44'}
-            ],
-            'threshold': {
-                'line': {'color': "red", 'width': 4},
-                'thickness': 0.75,
-                'value': 9
-            }
+            ]
         }
     ))
     
@@ -54,21 +57,6 @@ def create_score_gauge(score):
     )
     
     return fig
-
-def get_popular_options(df):
-    """Get popular options for dropdowns"""
-    if df is None:
-        return {}, {}, {}, {}
-    
-    try:
-        developers = sorted(df['developer'].unique())
-        platforms = sorted(df['platform'].unique())
-        genres = sorted(df['genre'].unique())
-        manufacturers = sorted(df['manufacturer'].unique())
-        
-        return developers, platforms, genres, manufacturers
-    except Exception:
-        return [], [], [], []
 
 def show_data_insights(df):
     """Show interesting insights about the dataset"""
@@ -99,7 +87,7 @@ def main():
     # st.markdown("""
     # <style>
     # .main-header {
-    #     background: linear-gradient(90deg, #1f4e79 0%, #2d5aa0 100%);
+    #     background: linear-gradient(90deg, #495057 0%, #6c757d 100%);
     #     padding: 2rem;
     #     border-radius: 15px;
     #     text-align: center;
@@ -108,7 +96,7 @@ def main():
     #     box-shadow: 0 10px 20px rgba(0,0,0,0.1);
     # }
     # .prediction-card {
-    #     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    #     background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
     #     padding: 2rem;
     #     border-radius: 15px;
     #     text-align: center;
@@ -143,7 +131,6 @@ def main():
         - **👨‍💻 Developer**: Game development studio
         - **🎮 Platform**: Gaming platform
         - **🎭 Genre**: Game category
-        - **🏭 Manufacturer**: Platform manufacturer
         """)
         
         # Show dataset insights
@@ -158,7 +145,7 @@ def main():
         st.markdown("🤖 **Model**: Random Forest Regressor")
 
     # Get options for dropdowns
-    developers, platforms, genres, manufacturers = get_popular_options(df_enhanced)
+    developers, platforms, genres= get_popular_options(df_enhanced)
 
     # Create two columns for input
     col1, col2 = st.columns([2, 1])
@@ -166,22 +153,40 @@ def main():
     with col1:
         st.subheader("🎯 Game Information")
         
+        # Show message if example was loaded
+        if st.session_state.get('example_features'):
+            st.success("🎮 Example values loaded! Modify as needed and click Predict.")
+        
         # Input form with better styling
         with st.form("prediction_form"):
+            # Check if example features are available in session state
+            raw_example_features = st.session_state.get('example_features', {})
+            
+            # Validate example features against available options
+            if raw_example_features:
+                example_features = get_valid_example_values(raw_example_features, developers, platforms, genres)
+            else:
+                example_features = {}
+            
             # Numerical inputs
             col_num1, col_num2 = st.columns(2)
             with col_num1:
                 metascore = st.slider(
                     "🎪 Metascore (Professional Rating)", 
-                    min_value=0, max_value=100, value=75,
+                    min_value=0, max_value=100, 
+                    value=example_features.get('metascore', 75),
                     help="Professional critics' score from 0-100"
                 )
             
             with col_num2:
+                # Get month value from examples or default
+                month_value = example_features.get('month', 6)
+                month_index = month_value - 1 if month_value in range(1, 13) else 5
+                
                 month = st.selectbox(
                     "📅 Release Month",
                     options=list(range(1, 13)),
-                    index=5,
+                    index=month_index,
                     format_func=lambda x: {
                         1: "January", 2: "February", 3: "March", 4: "April",
                         5: "May", 6: "June", 7: "July", 8: "August",
@@ -192,41 +197,56 @@ def main():
             # Categorical inputs with search functionality
             col_cat1, col_cat2 = st.columns(2)
             with col_cat1:
+                # Get developer index from validated examples
+                example_developer = example_features.get('developer', '')
+                developer_index = 0
+                if example_developer and developers and example_developer in developers:
+                    developer_index = developers.index(example_developer)
+                
                 developer = st.selectbox(
                     "👨‍💻 Developer",
                     options=developers,
-                    index=0 if developers else None,
+                    index=developer_index if developers else None,
                     help="Select the game development studio"
                 )
+                
+                # Get platform index from validated examples
+                example_platform = example_features.get('platform', '')
+                platform_index = 0
+                if example_platform and platforms and example_platform in platforms:
+                    platform_index = platforms.index(example_platform)
                 
                 platform = st.selectbox(
                     "🎮 Platform",
                     options=platforms,
-                    index=0 if platforms else None,
+                    index=platform_index if platforms else None,
                     help="Select the gaming platform"
                 )
             
             with col_cat2:
+                # Get genre index from validated examples
+                example_genre = example_features.get('genre', '')
+                genre_index = 0
+                if example_genre and genres and example_genre in genres:
+                    genre_index = genres.index(example_genre)
+                
                 genre = st.selectbox(
                     "🎭 Genre",
                     options=genres,
-                    index=0 if genres else None,
+                    index=genre_index if genres else None,
                     help="Select the game genre/category"
                 )
-                
-                manufacturer = st.selectbox(
-                    "🏭 Manufacturer",
-                    options=manufacturers,
-                    index=0 if manufacturers else None,
-                    help="Select the platform manufacturer"
-                )
 
-            # Submit button with custom styling
-            submitted = st.form_submit_button(
-                "🔮 Predict Score", 
-                use_container_width=True,
-                type="primary"
-            )
+                # Submit button with custom styling
+                submitted = st.form_submit_button(
+                    "🔮 Predict Score", 
+                    use_container_width=True,
+                    type="primary"
+                )
+                
+            # Clear example features after form submission
+            if submitted and 'example_features' in st.session_state:
+                del st.session_state.example_features
 
             if submitted:
                 # Collect features
@@ -236,7 +256,6 @@ def main():
                     'developer': developer or "",
                     'platform': platform or "",
                     'genre': genre or "",
-                    'manufacturer': manufacturer or ""
                 }
                 
                 # Validate inputs
@@ -253,58 +272,104 @@ def main():
                     if error:
                         st.error(f"❌ {error}")
                     else:
-                        # Show prediction result in the second column
-                        with col2:
-                            st.markdown(f"""
-                            <div class="prediction-card">
-                                <h2>🎯 Prediction Result</h2>
-                                <h1 style="font-size: 3rem; margin: 1rem 0;">{prediction:.2f}</h1>
-                                <p>Predicted User Score (out of 10)</p>
-                            </div>
-                            """, unsafe_allow_html=True)
-                            
-                            # Score interpretation
-                            if prediction is not None:
-                                if prediction >= 8.5:
-                                    st.success("🌟 Exceptional! This game is predicted to be loved by users!")
-                                elif prediction >= 7.0:
-                                    st.info("👍 Good! Users will likely enjoy this game.")
-                                elif prediction >= 5.0:
-                                    st.warning("⚠️ Mixed reviews expected. Some will like it, others won't.")
-                                else:
-                                    st.error("👎 Poor reception predicted. Users might not enjoy this game.")
-                                
+                        # Show prediction result - reorganized for better space usage
+                        st.markdown("---")
+                        st.subheader("🎯 Prediction Results")
+                        
+                        # Create three columns for horizontal layout
+                        col_gauge, col_metrics, col_category = st.columns([1.2, 1, 1])
+                        
+                        # Ensure prediction is valid before proceeding
+                        if prediction is not None and isinstance(prediction, (int, float)):
+                            with col_gauge:
                                 # Show gauge chart if plotly is available
-                                try:
-                                    fig = create_score_gauge(prediction)
-                                    if fig is not None:
-                                        st.plotly_chart(fig, use_container_width=True)
-                                    else:
+                                if PLOTLY_AVAILABLE:
+                                    try:
+                                        fig = create_score_gauge(prediction)
+                                        if fig is not None:
+                                            st.plotly_chart(fig, use_container_width=True)
+                                        else:
+                                            # Fallback with larger score display
+                                            st.markdown(f"""
+                                            <div style="text-align: center; padding: 2rem; background: linear-gradient(135deg, #6c757d 0%, #495057 100%); border-radius: 15px; color: white;">
+                                                <h3>Predicted Score</h3>
+                                                <h1 style="font-size: 4rem; margin: 1rem 0;">{prediction:.2f}</h1>
+                                                <p>out of 10</p>
+                                            </div>
+                                            """, unsafe_allow_html=True)
+                                            st.progress(prediction / 10)
+                                    except:
+                                        # Fallback with larger score display
+                                        st.markdown(f"""
+                                        <div style="text-align: center; padding: 2rem; background: linear-gradient(135deg, #6c757d 0%, #495057 100%); border-radius: 15px; color: white;">
+                                            <h3>Predicted Score</h3>
+                                            <h1 style="font-size: 4rem; margin: 1rem 0;">{prediction:.2f}</h1>
+                                            <p>out of 10</p>
+                                        </div>
+                                        """, unsafe_allow_html=True)
                                         st.progress(prediction / 10)
-                                except:
+                                else:
+                                    # Fallback with larger score display
+                                    st.markdown(f"""
+                                    <div style="text-align: center; padding: 2rem; background: linear-gradient(135deg, #6c757d 0%, #495057 100%); border-radius: 15px; color: white;">
+                                        <h3>Predicted Score</h3>
+                                        <h1 style="font-size: 4rem; margin: 1rem 0;">{prediction:.2f}</h1>
+                                        <p>out of 10</p>
+                                    </div>
+                                    """, unsafe_allow_html=True)
                                     st.progress(prediction / 10)
-                                    
-                                # Additional metrics display
-                                col_metric1, col_metric2 = st.columns(2)
-                                with col_metric1:
-                                    score_percentage = (prediction / 10) * 100
-                                    st.metric(
-                                        "📊 Score Percentage", 
-                                        f"{score_percentage:.1f}%",
-                                        delta=f"{score_percentage - 70:.1f}%" if score_percentage > 70 else None
-                                    )
+                            
+                            with col_metrics:
+                                # Larger score percentage metric
+                                score_percentage = (prediction / 10) * 100
+                                st.markdown(f"""
+                                <div style="text-align: center; padding: 2rem; background: white; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-left: 6px solid #6c757d;">
+                                    <h3 style="color: #495057; margin-bottom: 1rem;">📊 Score Percentage</h3>
+                                    <h1 style="color: #6c757d; font-size: 3.5rem; margin: 1rem 0;">{score_percentage:.1f}%</h1>
+                                    <p style="color: #666; font-size: 1.1rem;">
+                                        {"+" if score_percentage > 70 else ""}{score_percentage - 70:.1f}% vs Average
+                                    </p>
+                                </div>
+                                """, unsafe_allow_html=True)
+                            
+                            with col_category:
+                                # Larger category display
+                                if prediction >= 8.5:
+                                    category = "🌟 Exceptional"
+                                    category_color = "#28a745"
+                                    category_bg = "#d4edda"
+                                elif prediction >= 7.0:
+                                    category = "👍 Good"
+                                    category_color = "#17a2b8"
+                                    category_bg = "#d1ecf1"
+                                elif prediction >= 5.0:
+                                    category = "⚠️ Mixed"
+                                    category_color = "#ffc107"
+                                    category_bg = "#fff3cd"
+                                else:
+                                    category = "👎 Poor"
+                                    category_color = "#dc3545"
+                                    category_bg = "#f8d7da"
                                 
-                                with col_metric2:
-                                    if prediction >= 8.5:
-                                        category = "🌟 Exceptional"
-                                    elif prediction >= 7.0:
-                                        category = "👍 Good"
-                                    elif prediction >= 5.0:
-                                        category = "⚠️ Mixed"
-                                    else:
-                                        category = "👎 Poor"
-                                    
-                                    st.metric("🎯 Category", category)
+                                st.markdown(f"""
+                                <div style="text-align: center; padding: 2rem; background: {category_bg}; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-left: 6px solid {category_color};">
+                                    <h3 style="color: #495057; margin-bottom: 1rem;">🎯 Category</h3>
+                                    <h2 style="color: {category_color}; font-size: 2.5rem; margin: 1rem 0;">{category}</h2>
+                                    <p style="color: #666; font-size: 1.1rem;">Quality Rating</p>
+                                </div>
+                                """, unsafe_allow_html=True)
+                            
+                            # Score interpretation below in a single row
+                            if prediction >= 8.5:
+                                st.success("🌟 **Exceptional!** This game is predicted to be loved by users!")
+                            elif prediction >= 7.0:
+                                st.info("👍 **Good!** Users will likely enjoy this game.")
+                            elif prediction >= 5.0:
+                                st.warning("⚠️ **Mixed reviews expected.** Some will like it, others won't.")
+                            else:
+                                st.error("👎 **Poor reception predicted.** Users might not enjoy this game.")
+                        else:
+                            st.error("❌ Invalid prediction result. Please try again.")
 
     # Show example predictions
     st.markdown("---")
@@ -314,17 +379,17 @@ def main():
         {
             "name": "Nintendo Switch Zelda Game",
             "features": {"metascore": 95, "month": 11, "developer": "Nintendo", 
-                        "platform": "Nintendo Switch", "genre": "Open-World Action", "manufacturer": "Nintendo"}
+                        "platform": "Nintendo Switch", "genre": "Open-World Action"}
         },
         {
-            "name": "PlayStation Action Game",
+            "name": "PlayStation Action Game", 
             "features": {"metascore": 85, "month": 6, "developer": "Sony", 
-                        "platform": "PlayStation 5", "genre": "Action", "manufacturer": "Sony"}
+                        "platform": "PlayStation 5", "genre": "Action"}
         },
         {
-            "name": "PC Indie Game",
-            "features": {"metascore": 70, "month": 3, "developer": "Independent", 
-                        "platform": "PC", "genre": "Indie", "manufacturer": "PC"}
+            "name": "PC Strategy Game",
+            "features": {"metascore": 70, "month": 3, "developer": "Paradox Interactive", 
+                        "platform": "PC", "genre": "Strategy"}
         }
     ]
     
@@ -332,7 +397,9 @@ def main():
     for i, example in enumerate(examples):
         with cols[i]:
             if st.button(f"🎮 {example['name']}", key=f"example_{i}"):
+                # Set the example features in session state
                 st.session_state.example_features = example['features']
+                # Clear after setting to avoid persistence issues
                 st.rerun()
 
 def test():
@@ -342,8 +409,7 @@ def test():
         'month': 11,
         'developer': "Nintendo",
         'platform': "Nintendo Switch",
-        'genre': "Action",
-        'manufacturer': "Nintendo",
+        'genre': "Action"
     }
     
     try:

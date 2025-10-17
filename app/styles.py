@@ -10,7 +10,7 @@ def inject_custom_css():
     <style>
     /* Global styles */
     .stApp {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
     }
     
     /* Main content area */
@@ -121,7 +121,7 @@ def inject_custom_css():
     
     /* Sidebar styling */
     .css-1d391kg {
-        background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(180deg, #6c757d 0%, #495057 100%);
     }
     
     .css-1d391kg .css-1v0mbdj {
@@ -199,7 +199,7 @@ def create_animated_metric(label, value, icon="📊"):
     return f"""
     <div class="metric-card pulse-animation">
         <h3 style="margin: 0; color: #333;">{icon} {label}</h3>
-        <h2 style="margin: 10px 0; color: #667eea; font-size: 2rem;">{value}</h2>
+        <h2 style="margin: 10px 0; color: #6c757d; font-size: 2rem;">{value}</h2>
     </div>
     """
 
@@ -219,12 +219,11 @@ def create_feature_explanation():
         "📅 Release Month": "Launch timing affects user scores. Holiday releases (Nov-Dec) often perform differently.",
         "👨‍💻 Developer": "Studio reputation and track record influence user expectations and ratings.",
         "🎮 Platform": "Gaming platform affects audience and technical performance expectations.",
-        "🎭 Genre": "Game category influences user base and scoring patterns.",
-        "🏭 Manufacturer": "Platform owner affects ecosystem, marketing, and user loyalty."
+        "🎭 Genre": "Game category influences user base and scoring patterns."
     }
     
     st.markdown("### 🧠 How It Works")
-    st.markdown("Our AI model considers these key factors:")
+    st.markdown("This AI model considers these key factors:")
     
     cols = st.columns(2)
     for i, (feature, explanation) in enumerate(features_info.items()):

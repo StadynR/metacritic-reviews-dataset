@@ -2,6 +2,22 @@ import streamlit as st
 import pandas as pd
 import joblib
 
+MANUFACTURERS = {
+    'Nintendo': ['Nintendo 64', 'GameCube', 'Wii', 'Wii U', 'Nintendo Switch', 'Nintendo Switch 2', 'Game Boy Advance', 'DS', '3DS'],
+    'Sony': ['PlayStation', 'PlayStation 2', 'PlayStation 3', 'PlayStation 4', 'PlayStation 5', 'PSP', 'PlayStation Vita'],
+    'Microsoft': ['Xbox', 'Xbox 360', 'Xbox One', 'Xbox Series X'],
+    'Sega': ['Dreamcast'],
+    'Apple': ['iOS (iPhone/iPad)'],
+    'VR': ['Meta Quest'],
+    'PC': ['PC']
+}
+
+def map_manufacturers(platform):
+    for manufacturer, platforms in MANUFACTURERS.items():
+        if platform in platforms:
+            return manufacturer
+    return 'Other'
+
 def validate_inputs(features):
     """Validate user inputs and return error messages if any"""
     errors = []
@@ -14,9 +30,6 @@ def validate_inputs(features):
         
     if not features['genre'].strip():
         errors.append("Genre cannot be empty")
-        
-    if not features['manufacturer'].strip():
-        errors.append("Manufacturer cannot be empty")
     
     if features['metascore'] < 0 or features['metascore'] > 100:
         errors.append("Metascore must be between 0 and 100")
@@ -50,11 +63,12 @@ def predict_game_score(game_data: dict, model, features_df):
         platform = game_data.get("platform", "").strip()
         month = game_data.get("month", 1)
         genre = game_data.get("genre", "").strip()
-        manufacturer = game_data.get("manufacturer", "").strip()
         
         # Create a copy to avoid modifying the original
         processed_data = game_data.copy()
         processed_data["metascore_scaled"] = processed_data["metascore"] / 10
+        processed_data["manufacturer"] = map_manufacturers(processed_data["platform"])
+        manufacturer = processed_data["manufacturer"]
         processed_data.pop("metascore", None)
         
         # Calculate features with fallback values
@@ -90,3 +104,60 @@ def predict_game_score(game_data: dict, model, features_df):
     
     except Exception as e:
         return None, f"Prediction error: {str(e)}"
+    
+def get_valid_example_values(example_features, developers, platforms, genres):
+    """Ensure example values exist in the dataset, provide fallbacks if not"""
+    validated = {}
+    
+    # Validate and set metascore
+    validated['metascore'] = max(0, min(100, example_features.get('metascore', 75)))
+    
+    # Validate and set month
+    month_val = example_features.get('month', 6)
+    validated['month'] = month_val if month_val in range(1, 13) else 6
+    
+    # Validate developer
+    example_dev = example_features.get('developer', '')
+    if example_dev and developers and example_dev in developers:
+        validated['developer'] = example_dev
+    elif developers:
+        # Find similar developers or use first available
+        similar_devs = [dev for dev in developers if any(word in dev.lower() for word in example_dev.lower().split())]
+        validated['developer'] = similar_devs[0] if similar_devs else developers[0]
+    else:
+        validated['developer'] = ''
+    
+    # Validate platform
+    example_plat = example_features.get('platform', '')
+    if example_plat and platforms and example_plat in platforms:
+        validated['platform'] = example_plat
+    elif platforms:
+        similar_plats = [plat for plat in platforms if any(word in plat.lower() for word in example_plat.lower().split())]
+        validated['platform'] = similar_plats[0] if similar_plats else platforms[0]
+    else:
+        validated['platform'] = ''
+    
+    # Validate genre
+    example_genre = example_features.get('genre', '')
+    if example_genre and genres and example_genre in genres:
+        validated['genre'] = example_genre
+    elif genres:
+        similar_genres = [genre for genre in genres if any(word in genre.lower() for word in example_genre.lower().split())]
+        validated['genre'] = similar_genres[0] if similar_genres else genres[0]
+    else:
+        validated['genre'] = ''
+    
+    return validated
+
+def get_popular_options(df):
+    """Get popular options for dropdowns"""
+    if df is None:
+        return [], [], []
+    try:
+        developers = sorted(df['developer'].unique())
+        platforms = sorted(df['platform'].unique())
+        genres = sorted(df['genre'].unique())
+        
+        return developers, platforms, genres
+    except Exception:
+        return [], [], []
