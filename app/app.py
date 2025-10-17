@@ -391,6 +391,8 @@ def main():
             if st.button(f"🎮 {example['name']}", key=f"example_{i}"):
                 # Set the example features in session state
                 st.session_state.example_features = example['features']
+                # Clear after setting to avoid persistence issues
+                st.rerun()
 
 def test():
     """Test function for development"""
