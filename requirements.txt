@@ -8,3 +8,5 @@ seaborn
 scikit-learn
 joblib
 streamlit
+plotly
+kaleido
