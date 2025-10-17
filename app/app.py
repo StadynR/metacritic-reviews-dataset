@@ -274,7 +274,7 @@ def main():
                     st.subheader("🎯 Prediction Results")
                     
                     # Create three columns for horizontal layout - better proportions
-                    col_gauge, col_metrics, col_category = st.columns([1, 1, 1])
+                    col_gauge, col_metrics, col_category = st.columns([0.6, 0.2, 0.2])
                     
                     # Ensure prediction is valid before proceeding
                     if prediction is not None and isinstance(prediction, (int, float)):
