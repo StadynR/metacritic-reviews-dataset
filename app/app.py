@@ -11,15 +11,15 @@ def predict_game_score(game_data: dict, model, features_df):
     manufacturer = game_data.get("manufacturer", None)
     game_data["metascore_scaled"] = game_data["metascore"] / 10
     game_data.pop("metascore", None)
-    game_data["developer_avg_score"] = features_df[features_df["developer"] == developer]["developer_avg_score"].iloc[0]
-    game_data["platform_age"] = features_df[features_df["platform"] == platform]["platform_age"].iloc[0]
+    game_data["developer_avg_score"] = features_df[features_df["developer"] == developer]["developer_avg_score"].mean()
+    game_data["platform_age"] = features_df[features_df["platform"] == platform]["platform_age"].mean()
     game_data["is_holiday_release"] = 1 if month in [11, 12] else 0
     genre_counts = features_df['genre'].value_counts()
     game_data["genre_popularity"] = genre_counts.get(genre, 0)
-    game_data["platform_genre_encoded"] = features_df[features_df["platform_genre"] == f"{platform}_{genre}"]["platform_genre_encoded"].iloc[0]
-    game_data["genre_encoded"] = features_df[features_df["genre"] == genre]["genre_encoded"].iloc[0]
-    game_data["platform_encoded"] = features_df[features_df["platform"] == platform]["platform_encoded"].iloc[0]
-    game_data["manufacturer_encoded"] = features_df[features_df["manufacturer"] == manufacturer]["manufacturer_encoded"].iloc[0]
+    game_data["platform_genre_encoded"] = features_df[features_df["platform_genre"] == f"{platform}_{genre}"]["platform_genre_encoded"].mean()
+    game_data["genre_encoded"] = features_df[features_df["genre"] == genre]["genre_encoded"].mean()
+    game_data["platform_encoded"] = features_df[features_df["platform"] == platform]["platform_encoded"].mean()
+    game_data["manufacturer_encoded"] = features_df[features_df["manufacturer"] == manufacturer]["manufacturer_encoded"].mean()
 
     game_data_df = pd.DataFrame([game_data])
     predict_df = game_data_df[model.feature_names_in_]
