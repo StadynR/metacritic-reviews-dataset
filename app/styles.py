@@ -21,6 +21,8 @@ def inject_custom_css():
         border-radius: 15px;
         box-shadow: 0 20px 40px rgba(0,0,0,0.1);
         margin: 1rem;
+        max-width: none;
+        width: 100%;
     }
     
     /* Header styling */
@@ -111,7 +113,7 @@ def inject_custom_css():
     
     /* Info cards */
     .info-card {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        background: linear-gradient(180deg, #1E2532 0%, #141820 100%);
         padding: 1.5rem;
         border-radius: 12px;
         color: white;
@@ -121,10 +123,17 @@ def inject_custom_css():
     
     /* Sidebar styling */
     .css-1d391kg {
-        background: linear-gradient(180deg, #6c757d 0%, #495057 100%);
+        background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+        max-width: 300px;
+        width: 300px;
     }
     
     .css-1d391kg .css-1v0mbdj {
+        color: white;
+    }
+    
+    /* Sidebar content styling */
+    .css-1d391kg .stMarkdown {
         color: white;
     }
     
@@ -176,7 +185,29 @@ def inject_custom_css():
         animation: pulse 2s infinite;
     }
     
+    /* Full width layout improvements */
+    .stForm {
+        width: 100%;
+    }
+    
+    /* Improved spacing for horizontal layout */
+    .stSelectbox, .stSlider {
+        margin-bottom: 1rem;
+    }
+    
+    /* Better column spacing */
+    .css-1kyxreq {
+        gap: 1rem;
+    }
+    
     /* Responsive design */
+    @media (max-width: 1200px) {
+        .main .block-container {
+            margin: 0.5rem;
+            padding: 1.5rem;
+        }
+    }
+    
     @media (max-width: 768px) {
         .main .block-container {
             padding: 1rem;
@@ -189,6 +220,11 @@ def inject_custom_css():
         
         .prediction-card {
             padding: 1rem;
+        }
+        
+        /* Stack form elements on mobile */
+        .css-1kyxreq {
+            flex-direction: column;
         }
     }
     </style>

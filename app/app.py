@@ -20,7 +20,7 @@ st.set_page_config(
     page_title="Metacritic Game Score Predictor",
     page_icon="🎮",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 def create_score_gauge(score):
@@ -147,17 +147,14 @@ def main():
     # Get options for dropdowns
     developers, platforms, genres= get_popular_options(df_enhanced)
 
-    # Create two columns for input
-    col1, col2 = st.columns([2, 1])
-
-    with col1:
-        st.subheader("🎯 Game Information")
-        
-        # Show message if example was loaded
-        if st.session_state.get('example_features'):
-            st.success("🎮 Example values loaded! Modify as needed and click Predict.")
-        
-        # Input form with better styling
+    # Use full width layout
+    st.subheader("🎯 Game Information")
+    
+    # Show message if example was loaded
+    if st.session_state.get('example_features'):
+        st.success("🎮 Example values loaded! Modify as needed and click Predict.")
+    
+    # Input form with better styling - full width
         with st.form("prediction_form"):
             # Check if example features are available in session state
             raw_example_features = st.session_state.get('example_features', {})
@@ -168,9 +165,10 @@ def main():
             else:
                 example_features = {}
             
-            # Numerical inputs
-            col_num1, col_num2 = st.columns(2)
-            with col_num1:
+            # Create horizontal layout with more columns to use full width
+            col1, col2, col3, col4, col5 = st.columns([1.2, 1, 1, 1, 1])
+            
+            with col1:
                 metascore = st.slider(
                     "🎪 Metascore (Professional Rating)", 
                     min_value=0, max_value=100, 
@@ -178,7 +176,7 @@ def main():
                     help="Professional critics' score from 0-100"
                 )
             
-            with col_num2:
+            with col2:
                 # Get month value from examples or default
                 month_value = example_features.get('month', 6)
                 month_index = month_value - 1 if month_value in range(1, 13) else 5
@@ -194,9 +192,7 @@ def main():
                     }[x]
                 )
             
-            # Categorical inputs with search functionality
-            col_cat1, col_cat2 = st.columns(2)
-            with col_cat1:
+            with col3:
                 # Get developer index from validated examples
                 example_developer = example_features.get('developer', '')
                 developer_index = 0
@@ -209,7 +205,8 @@ def main():
                     index=developer_index if developers else None,
                     help="Select the game development studio"
                 )
-                
+            
+            with col4:
                 # Get platform index from validated examples
                 example_platform = example_features.get('platform', '')
                 platform_index = 0
@@ -223,7 +220,7 @@ def main():
                     help="Select the gaming platform"
                 )
             
-            with col_cat2:
+            with col5:
                 # Get genre index from validated examples
                 example_genre = example_features.get('genre', '')
                 genre_index = 0
@@ -236,13 +233,13 @@ def main():
                     index=genre_index if genres else None,
                     help="Select the game genre/category"
                 )
-                
-                # Submit button with custom styling - positioned at same height as Platform
-                submitted = st.form_submit_button(
-                    "🔮 Predict Score", 
-                    use_container_width=True,
-                    type="primary"
-                )
+            
+            # Submit button with custom styling - full width below all inputs
+            submitted = st.form_submit_button(
+                "🔮 Predict Score", 
+                use_container_width=True,
+                type="primary"
+            )
                 
             # Clear example features after form submission
             if submitted and 'example_features' in st.session_state:
@@ -276,8 +273,8 @@ def main():
                         st.markdown("---")
                         st.subheader("🎯 Prediction Results")
                         
-                        # Create three columns for horizontal layout
-                        col_gauge, col_metrics, col_category = st.columns([1.2, 1, 1])
+                        # Create three columns for horizontal layout - better proportions
+                        col_gauge, col_metrics, col_category = st.columns([1, 1, 1])
                         
                         # Ensure prediction is valid before proceeding
                         if prediction is not None and isinstance(prediction, (int, float)):
