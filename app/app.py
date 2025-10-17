@@ -48,7 +48,7 @@ def main():
         if value in categorical_features:
             feature_value = st.text_input(f'{label}', '')
         else:
-            feature_value = st.number_input(f'{label}', min_value=0.0, value=0.0)
+            feature_value = st.number_input(f'{label}', min_value=0, value=0)
         features[value] = feature_value
 
     # Button to make a prediction
