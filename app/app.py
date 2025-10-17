@@ -241,9 +241,9 @@ def main():
                 type="primary"
             )
                 
-            # Clear example features after form submission
-            if submitted and 'example_features' in st.session_state:
-                del st.session_state.example_features
+            # # Clear example features after form submission
+            # if submitted and 'example_features' in st.session_state:
+            #     del st.session_state.example_features
 
             if submitted:
                 # Collect features
