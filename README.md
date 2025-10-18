@@ -12,16 +12,15 @@ This repository is based on the idea (and a bit of code) from [projectGames](htt
 
 ## Features
 
-- **🚀 Production-Ready Web App**: Modern Streamlit application with professional UI/UX design
-- **🔄 Fully Asynchronous Scraping**: Built with `httpx` + `asyncio` + bounded concurrency for optimal performance
-- **🛡️ Resilient Data Collection**: Retries with exponential backoff on transient errors (403/429/network issues)
-- **📊 Advanced Machine Learning**: Random Forest model with feature engineering for accurate user score predictions
-- **🎨 Interactive Visualizations**: Comprehensive charts using Plotly with elegant gauge displays and metrics
-- **📈 Temporal & Trend Analysis**: Multi-dimensional data exploration across genres, platforms, and time periods
-- **🔧 Robust Error Handling**: Graceful degradation and fallback mechanisms throughout the application
-- **💾 Incremental Processing**: Per-page CSV snapshots for resilience and resumability during scraping
-- **🎯 Smart Predictions**: Context-aware predictions with developer reputation, seasonal effects, and platform interactions
-- **📱 Responsive Design**: Mobile-friendly interface with modern CSS styling and animations
+- **Web App**: Modern Streamlit application
+- **Fully Asynchronous Scraping**: Built with `httpx` + `asyncio` + bounded concurrency for optimal performance
+- **Advanced Machine Learning**: Random Forest model with feature engineering for accurate user score predictions
+- **Interactive Visualizations**: Comprehensive charts using Plotly with elegant gauge displays and metrics
+- **Temporal & Trend Analysis**: Multi-dimensional data exploration across genres, platforms, and time periods
+- **Robust Error Handling**: Graceful degradation and fallback mechanisms throughout the application
+- **Incremental Processing**: Per-page CSV snapshots for resilience and resumability during scraping
+- **Smart Predictions**: Context-aware predictions with developer reputation, seasonal effects, and platform interactions
+- **Responsive Design**: Mobile-friendly interface with modern CSS styling and animations
 
 ## Repository Structure
 
